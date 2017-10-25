@@ -1,6 +1,7 @@
 #include <Arduino.h>
-/*
 #include <VirtualWire.h>
+#include<configuracion.h>
+/*
 void setup()
 {
 Serial.begin(9600); //Se inicia la comunicación serial
@@ -60,8 +61,15 @@ int Pinrojo=6;
 int Pinverde=5;
 int buzzer=4;
 //___________________________________________________
+ // Descripción de valores del Sensor 
+ 
+ // 0 -300 En agua 
+ // 300-700 Húmedo 
+ // 700-950 Seco 
+ 
+int Valor; 
 void setup() { 
- Serial.begin (9600); 
+Serial.begin (9600); 
 
  pinMode(Pinverde,OUTPUT); //Definimos los pines
  pinMode(Pinrojo, OUTPUT); 
@@ -97,8 +105,10 @@ void setup() {
  // Set delay between sensor readings based on sensor details.
  delayMS = sensor.min_delay / 1000;
 
+ //____________________________________RADIO
+configuracionTransmisor();
 
-
+ //____________________________________FIN_RADIO
 } 
 
 void loop() { 
@@ -125,13 +135,61 @@ else if (cm<20)
  digitalWrite(Pinrojo, HIGH);
  tone(buzzer, 440, 500);
 }
- delay(500); 
 
 
- // Delay between measurements.
- delay(delayMS);
+// //___________________________________________________________________________________________________________
+//  // Delay between measurements.
+//  delay(delayMS);
+//  // Get temperature event and print its value.
+//  sensors_event_t event;  
+//  dht.temperature().getEvent(&event);
+//  if (isnan(event.temperature)) {
+//    Serial.println("Error reading temperature!");
+//  }
+//  else {
+//    Serial.print("Temperature: ");
+//    Serial.print(event.temperature);
+//    Serial.println(" *C");
+//  }
+//  // Get humidity event and print its value.
+//  dht.humidity().getEvent(&event);
+//  if (isnan(event.relative_humidity)) {
+//    Serial.println("Error reading humidity!");
+//  }
+//  else {
+//    Serial.print("Humidity: ");
+//    Serial.print(event.relative_humidity);
+//    Serial.println("%");
+//  }
+
+
+//___________________________________________________________________________________________________________
+//h_tierra
+ Serial.print("Sensor de Humedad valor:"); 
+ Valor = analogRead(0); 
+ Serial.print(Valor); 
+ if (Valor <= 300) 
+ Serial.println("Encharcado "); 
+ if ((Valor > 300) and (Valor <= 700)) 
+ Serial.println(" Humedo, no necesitas regar "); 
+ if (Valor > 700) 
+ Serial.println(" Seco, necesitas regar"); 
+ //delay(1000);
+
+ Serial.println("__________________El bueno____________________");
+ String trama="";
+ 
+ //humedad tierra
+ Serial.println(Valor);
+
+ trama+=String(Valor)+"/";
+ //Valor de Distanc
+ Serial.println(cm);
+ trama+=String(cm)+"/";
+ //Temperatura
+ 
  // Get temperature event and print its value.
- sensors_event_t event;  
+ sensors_event_t event; 
  dht.temperature().getEvent(&event);
  if (isnan(event.temperature)) {
    Serial.println("Error reading temperature!");
@@ -139,6 +197,7 @@ else if (cm<20)
  else {
    Serial.print("Temperature: ");
    Serial.print(event.temperature);
+   trama+=String(event.temperature)+"/";
    Serial.println(" *C");
  }
  // Get humidity event and print its value.
@@ -149,6 +208,17 @@ else if (cm<20)
  else {
    Serial.print("Humidity: ");
    Serial.print(event.relative_humidity);
+   trama+=String(event.relative_humidity);
    Serial.println("%");
  }
+ Serial.println(trama);
+  //____________________________________RADIO
+  enviarTrama(trama);
+  //____________________________________FIN_RADIO
+ 
+
+ Serial.println("___________________El bueno___________________");
+
 }
+
+
